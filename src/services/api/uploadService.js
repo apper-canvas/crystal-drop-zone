@@ -20,9 +20,25 @@ export const getUploadConfig = async () => {
       maxFiles: 10,
       allowMultiple: true
     };
-  } catch (error) {
+} catch (error) {
     console.error("Error loading upload config:", error);
-    throw error;
+    // Return default configuration even if there's an error
+    return {
+      maxFileSize: 10485760, // 10MB
+      acceptedTypes: [
+        "image/*",
+        "application/pdf", 
+        ".doc",
+        ".docx",
+        ".txt",
+        ".csv",
+        ".xlsx",
+        ".ppt",
+        ".pptx"
+      ],
+      maxFiles: 10,
+      allowMultiple: true
+    };
   }
 };
 
