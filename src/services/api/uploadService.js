@@ -2,44 +2,23 @@ import { getApperClient } from "@/services/apperClient";
 
 // Get upload configuration from database or default
 export const getUploadConfig = async () => {
-  try {
-    // Return default configuration
-    return {
-      maxFileSize: 10485760, // 10MB
-      acceptedTypes: [
-        "image/*",
-        "application/pdf", 
-        ".doc",
-        ".docx",
-        ".txt",
-        ".csv",
-        ".xlsx",
-        ".ppt",
-        ".pptx"
-      ],
-      maxFiles: 10,
-      allowMultiple: true
-    };
-} catch (error) {
-    console.error("Error loading upload config:", error);
-    // Return default configuration even if there's an error
-    return {
-      maxFileSize: 10485760, // 10MB
-      acceptedTypes: [
-        "image/*",
-        "application/pdf", 
-        ".doc",
-        ".docx",
-        ".txt",
-        ".csv",
-        ".xlsx",
-        ".ppt",
-        ".pptx"
-      ],
-      maxFiles: 10,
-      allowMultiple: true
-    };
-  }
+  // Return default configuration
+  return {
+    maxFileSize: 10485760, // 10MB
+    acceptedTypes: [
+      "image/*",
+      "application/pdf", 
+      ".doc",
+      ".docx",
+      ".txt",
+      ".csv",
+      ".xlsx",
+      ".ppt",
+      ".pptx"
+    ],
+    maxFiles: 10,
+    allowMultiple: true
+  };
 };
 
 // Get all uploaded files from database
