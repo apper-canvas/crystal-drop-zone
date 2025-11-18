@@ -1,30 +1,52 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "react-toastify";
+import ApperFileFieldComponent from "@/components/atoms/FileUploader/ApperFileFieldComponent";
+import { createFilePreview, formatFileSize, generateFileId, validateFileSize, validateFileType } from "@/utils/fileUtils";
+import { createUploadedFile, getAllUploadedFiles, getUploadConfig } from "@/services/api/uploadService";
 import ApperIcon from "@/components/ApperIcon";
+import FileCard from "@/components/molecules/FileCard";
+import DropZone from "@/components/molecules/DropZone";
+import Loading from "@/components/ui/Loading";
+import Empty from "@/components/ui/Empty";
+import ErrorView from "@/components/ui/ErrorView";
 import Button from "@/components/atoms/Button";
 import Card from "@/components/atoms/Card";
-import DropZone from "@/components/molecules/DropZone";
-import FileCard from "@/components/molecules/FileCard";
-import Loading from "@/components/ui/Loading";
-import ErrorView from "@/components/ui/ErrorView";
-import Empty from "@/components/ui/Empty";
-import { generateFileId, createFilePreview, validateFileType, validateFileSize, formatFileSize } from "@/utils/fileUtils";
-import { getUploadConfig, uploadMultipleFiles } from "@/services/api/uploadService";
+
+// Helper function to get file icon based on file type
+const getFileIcon = (fileType) => {
+  if (!fileType) return "File";
+  
+  const type = fileType.toLowerCase();
+  
+  if (type.includes('image')) return "Image";
+  if (type.includes('video')) return "Video";
+  if (type.includes('audio')) return "Music";
+  if (type.includes('pdf')) return "FileText";
+  if (type.includes('word') || type.includes('doc')) return "FileText";
+  if (type.includes('excel') || type.includes('sheet')) return "FileSpreadsheet";
+  if (type.includes('powerpoint') || type.includes('presentation')) return "FileText";
+  if (type.includes('zip') || type.includes('rar') || type.includes('archive')) return "Archive";
+  if (type.includes('text') || type.includes('plain')) return "FileText";
+  if (type.includes('json') || type.includes('javascript') || type.includes('css') || type.includes('html')) return "Code";
+  
+  return "File";
+};
 
 const FileUploader = () => {
-  const [uploadConfig, setUploadConfig] = useState(null);
+const [uploadConfig, setUploadConfig] = useState(null);
   const [files, setFiles] = useState([]);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load upload configuration
   useEffect(() => {
     loadConfig();
+    loadUploadedFiles();
   }, []);
 
-  const loadConfig = async () => {
+const loadConfig = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -34,6 +56,15 @@ const FileUploader = () => {
       setError(err.message || "Failed to load upload configuration");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUploadedFiles = async () => {
+    try {
+      const dbFiles = await getAllUploadedFiles();
+      setUploadedFiles(dbFiles);
+    } catch (err) {
+      console.error("Error loading uploaded files:", err);
     }
   };
 
@@ -112,7 +143,7 @@ const FileUploader = () => {
     toast.info("File removed from upload queue");
   };
 
-  const handleStartUpload = async () => {
+const handleStartUpload = async () => {
     const pendingFiles = files.filter(f => f.status === "pending" || f.status === "error");
     
     if (pendingFiles.length === 0) {
@@ -130,40 +161,59 @@ const FileUploader = () => {
           : f
       ));
 
-      await uploadMultipleFiles(
-        pendingFiles,
-        // Progress callback
-        (fileId, progress, speed) => {
+      // Process files with ApperFileFieldComponent
+      for (const fileData of pendingFiles) {
+        try {
+          // Create database record
+          const dbRecord = await createUploadedFile({
+            filename_c: fileData.name,
+            size_c: fileData.size,
+            type_c: fileData.type,
+            uploaded_at_c: new Date().toISOString(),
+            url_c: fileData.preview || "",
+            Name: fileData.name,
+            Tags: ""
+          });
+
+          // Update file status to success
           setFiles(prev => prev.map(f => 
-            f.id === fileId 
-              ? { ...f, progress, uploadSpeed: speed }
-              : f
-          ));
-        },
-        // File complete callback
-        (fileId, success, result) => {
-          setFiles(prev => prev.map(f => 
-            f.id === fileId 
+            f.id === fileData.id 
               ? { 
                   ...f, 
-                  status: success ? "success" : "error",
-                  error: success ? null : result,
-                  progress: success ? 100 : f.progress,
+                  status: "success",
+                  progress: 100,
+                  uploadSpeed: 0,
+                  dbId: dbRecord?.Id
+                }
+              : f
+          ));
+
+          toast.success(`${fileData.name} uploaded successfully`);
+
+        } catch (error) {
+          // Update file status to error
+          setFiles(prev => prev.map(f => 
+            f.id === fileData.id 
+              ? { 
+                  ...f, 
+                  status: "error",
+                  error: error.message,
                   uploadSpeed: 0
                 }
               : f
           ));
 
-          if (success) {
-            toast.success(`${files.find(f => f.id === fileId)?.name} uploaded successfully`);
-          } else {
-            toast.error(`Failed to upload ${files.find(f => f.id === fileId)?.name}: ${result}`);
-          }
+          toast.error(`Failed to upload ${fileData.name}: ${error.message}`);
         }
-      );
+      }
 
+      // Reload uploaded files list
+      await loadUploadedFiles();
+      
       const successCount = files.filter(f => f.status === "success").length;
-      toast.success(`Upload completed! ${successCount} file${successCount > 1 ? 's' : ''} uploaded successfully.`);
+      if (successCount > 0) {
+        toast.success(`Upload completed! ${successCount} file${successCount > 1 ? 's' : ''} uploaded successfully.`);
+      }
 
     } catch (error) {
       toast.error("Upload failed: " + error.message);
@@ -206,7 +256,7 @@ const FileUploader = () => {
   const completedFiles = files.filter(f => f.status === "success");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-blue-50 to-purple-50">
+<div className="min-h-screen bg-gradient-to-br from-background via-blue-50 to-purple-50">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
@@ -223,7 +273,32 @@ const FileUploader = () => {
           </p>
         </div>
 
-        {/* Drop Zone */}
+        {/* ApperFileFieldComponent for database file uploads */}
+        <Card className="p-6">
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900">Upload Files to Database</h2>
+            <ApperFileFieldComponent
+              elementId="main-file-uploader"
+              config={{
+                fieldKey: 'file-upload-field',
+                fieldName: 'file_content_c',
+                tableName: 'uploadedfile_c',
+                apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+                apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY,
+                existingFiles: uploadedFiles.map(file => ({
+                  Id: file.Id,
+                  Name: file.filename_c || file.Name,
+                  Size: file.size_c,
+                  Type: file.type_c,
+                  Url: file.url_c
+                })),
+                fileCount: uploadedFiles.length
+              }}
+            />
+          </div>
+        </Card>
+
+        {/* Traditional Drop Zone */}
         <DropZone
           onFilesSelected={handleFilesSelected}
           acceptedTypes={uploadConfig?.acceptedTypes || []}
@@ -320,6 +395,31 @@ const FileUploader = () => {
         )}
 
         {/* Upload Statistics */}
+{/* Database Files Display */}
+        {uploadedFiles.length > 0 && (
+          <Card className="p-6">
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-gray-900">Uploaded Files ({uploadedFiles.length})</h2>
+              <div className="grid gap-4">
+                {uploadedFiles.map(file => (
+                  <div key={file.Id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                    <ApperIcon name={getFileIcon(file.type_c)} className="w-8 h-8 text-gray-600" />
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{file.filename_c || file.Name}</p>
+                      <p className="text-sm text-gray-500">
+                        {formatFileSize(file.size_c)} • {file.type_c}
+                      </p>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(file.uploaded_at_c).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+        )}
+
         {completedFiles.length > 0 && (
           <Card className="p-6 bg-gradient-to-r from-success/10 to-green-100 border-success/20">
             <div className="flex items-center space-x-4">

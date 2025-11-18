@@ -1,6 +1,7 @@
 import { RouterProvider } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { router } from "@/router";
+import React from "react";
 
 function App() {
   return (
@@ -8,16 +9,20 @@ function App() {
       <RouterProvider router={router} />
       <ToastContainer
         position="top-right"
-        autoClose={3000}
+        autoClose={4000}
         hideProgressBar={false}
-        newestOnTop={false}
+        newestOnTop
         closeOnClick
         rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover
         theme="light"
-        style={{ zIndex: 9999 }}
+        limit={5}
+        toastStyle={{
+          borderRadius: '8px',
+          fontFamily: 'Inter, system-ui, sans-serif',
+        }}
       />
     </>
   );

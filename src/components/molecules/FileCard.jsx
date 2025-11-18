@@ -76,10 +76,10 @@ const FileCard = ({
             <div className="flex items-start justify-between">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {file.name}
+{file.name || file.filename_c}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {formatFileSize(file.size)}
+                  {formatFileSize(file.size || file.size_c)}
                 </p>
               </div>
 

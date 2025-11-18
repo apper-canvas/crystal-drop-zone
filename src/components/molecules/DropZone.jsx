@@ -155,7 +155,7 @@ const DropZone = ({
 
         {/* File Requirements */}
         <div className="text-center space-y-2 text-sm text-gray-500">
-          {acceptedTypes.length > 0 && (
+{acceptedTypes && acceptedTypes.length > 0 && (
             <p>
               Accepted types: {acceptedTypes.join(", ")}
             </p>

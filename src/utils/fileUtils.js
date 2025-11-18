@@ -66,10 +66,9 @@ export const validateFileSize = (file, maxSize) => {
 };
 
 export const getFileIcon = (fileType, extension) => {
-  // Normalize inputs
+  // Normalize inputs - handle both old and new field names
   const type = (fileType || '').toLowerCase();
   const ext = (extension || '').toLowerCase().replace('.', '');
-  
   // Image files
   if (type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'].includes(ext)) {
     return 'Image';

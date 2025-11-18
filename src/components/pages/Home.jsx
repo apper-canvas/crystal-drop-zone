@@ -1,6 +1,9 @@
 import FileUploader from "@/components/organisms/FileUploader";
+import { useSelector } from 'react-redux';
 
-const Home = () => {
+function Home() {
+  const { user, isAuthenticated } = useSelector(state => state.user);
+  
   return <FileUploader />;
 };
 
