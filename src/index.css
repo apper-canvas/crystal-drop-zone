@@ -1,0 +1,88 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import 'react-toastify/dist/ReactToastify.css';
+
+/* Custom toast styling */
+.Toastify__toast {
+  @apply rounded-lg shadow-lg;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  min-height: 64px;
+}
+
+.Toastify__toast--success {
+  @apply bg-white border-l-4 border-l-success text-gray-900;
+}
+
+.Toastify__toast--error {
+  @apply bg-white border-l-4 border-l-error text-gray-900;
+}
+
+.Toastify__toast--info {
+  @apply bg-white border-l-4 border-l-info text-gray-900;
+}
+
+.Toastify__toast--warning {
+  @apply bg-white border-l-4 border-l-warning text-gray-900;
+}
+
+.Toastify__progress-bar {
+  @apply bg-gradient-to-r from-primary to-secondary;
+}
+
+.Toastify__toast-container {
+  width: 320px;
+}
+
+/* Base styles */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  font-variation-settings: 'opsz' 32;
+}
+
+/* Prevent default drag behaviors */
+body {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}
+
+/* Progress bar shimmer effect */
+.progress-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 2s linear infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+}
+
+/* File input focus styles */
+.file-input:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
