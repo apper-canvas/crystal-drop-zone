@@ -64,3 +64,49 @@ export const validateFileType = (file, acceptedTypes) => {
 export const validateFileSize = (file, maxSize) => {
   return file.size <= maxSize;
 };
+
+export const getFileIcon = (fileType, extension) => {
+  // Normalize inputs
+  const type = (fileType || '').toLowerCase();
+  const ext = (extension || '').toLowerCase().replace('.', '');
+  
+  // Image files
+  if (type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'].includes(ext)) {
+    return 'Image';
+  }
+  
+  // Document files
+  if (type.includes('pdf') || ext === 'pdf') return 'FileText';
+  if (type.includes('word') || type.includes('document') || ['doc', 'docx'].includes(ext)) return 'FileText';
+  if (type.includes('excel') || type.includes('spreadsheet') || ['xls', 'xlsx', 'csv'].includes(ext)) return 'FileSpreadsheet';
+  if (type.includes('powerpoint') || type.includes('presentation') || ['ppt', 'pptx'].includes(ext)) return 'Presentation';
+  if (['txt', 'rtf', 'md', 'markdown'].includes(ext)) return 'FileText';
+  
+  // Video files
+  if (type.startsWith('video/') || ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv', '3gp'].includes(ext)) {
+    return 'Video';
+  }
+  
+  // Audio files
+  if (type.startsWith('audio/') || ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma'].includes(ext)) {
+    return 'Music';
+  }
+  
+  // Archive files
+  if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(ext)) {
+    return 'Archive';
+  }
+  
+  // Code files
+  if (['js', 'jsx', 'ts', 'tsx', 'html', 'css', 'json', 'xml', 'py', 'java', 'cpp', 'c', 'php', 'rb', 'go', 'rs', 'swift'].includes(ext)) {
+    return 'Code';
+  }
+  
+  // Executable files
+  if (['exe', 'msi', 'dmg', 'pkg', 'deb', 'rpm', 'app'].includes(ext)) {
+    return 'Settings';
+  }
+  
+  // Default fallback
+  return 'File';
+};
