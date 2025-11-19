@@ -8,7 +8,7 @@ const ApperFileFieldComponent = ({
 }) => {
   const [isReady, setIsReady] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const elementIdRef = useRef(null);
+  const elementIdRef = useRef(elementId);
   const existingFilesRef = useRef([]);
 
   // Memoize existing files to prevent unnecessary re-renders
@@ -31,7 +31,7 @@ const ApperFileFieldComponent = ({
 
   // Update elementId ref when it changes
   useEffect(() => {
-    elementIdRef.current = `file-uploader-${elementId}`;
+    elementIdRef.current = elementId;
   }, [elementId]);
 
   // Check SDK availability and mount component
